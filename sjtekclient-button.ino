@@ -13,8 +13,8 @@
 #define MQTT_PASS "secret"
 
 #define PIN_LED 2
-#define PIN_RED 0
-#define PIN_GREEN 3
+#define PIN_RED 5
+#define PIN_GREEN 4
 
 #define GREEN_HIGH 1
 #define RED_HIGH 1
@@ -61,9 +61,7 @@ void setup() {
   Serial.println("Setup");
   
   pinMode(PIN_RED, INPUT);
-  digitalWrite(PIN_RED, HIGH);
   pinMode(PIN_GREEN, INPUT);
-  digitalWrite(PIN_GREEN, HIGH);
   pinMode(PIN_LED, OUTPUT);
 }
 
@@ -74,34 +72,37 @@ void loop() {
   digitalWrite(PIN_LED, LOW);
   connectWiFi();
   connectMQTT();
+  delay(100);
   while (mqtt.connected()) {
+    delay(100);
     digitalWrite(PIN_LED, HIGH);
-    if (digitalRead(PIN_RED) == 1) {
+    if (digitalRead(PIN_RED) == 0) {
       Serial.println("RED");
       digitalWrite(PIN_LED, LOW);
       mqtt.publish("actions", "api/switch");
-      delay(1000);
-      while (digitalRead(PIN_RED) == 1) {
+      delay(1500);
+      while (digitalRead(PIN_RED) == 0) {
         delay(100);
       }
+      Serial.println("RED release");
     }
 
     if (digitalRead(PIN_GREEN) == 1) {
       Serial.println("GREEN");
       digitalWrite(PIN_LED, LOW);
       mqtt.publish("actions", "api/music/start");
-      delay(2000);
+      delay(1500);
       while (digitalRead(PIN_GREEN) == 1) {
         delay(100);
       }
+      Serial.println("GREEN release");
     }
 
     if ((millis() - lastPing) > PING_DELAY) {
       lastPing = millis();
+      Serial.println("ping");
       mqtt.publish("actions", "ping");
     }
-    
-    delay(50);
   }
 }
 
