@@ -15,6 +15,7 @@
 #define PIN_LED 2
 #define PIN_RED 5
 #define PIN_GREEN 4
+#define PIN_MOTION 14
 
 #define GREEN_HIGH 1
 #define RED_HIGH 1
@@ -63,10 +64,12 @@ void setup() {
   pinMode(PIN_RED, INPUT);
   pinMode(PIN_GREEN, INPUT);
   pinMode(PIN_LED, OUTPUT);
+  pinMode(PIN_MOTION, INPUT);
 }
 
 
 long lastPing = 0;
+int lastMotionValue = 0;
 
 void loop() {
   digitalWrite(PIN_LED, LOW);
@@ -96,6 +99,14 @@ void loop() {
         delay(100);
       }
       Serial.println("GREEN release");
+    }
+
+    int motionValue = digitalRead(PIN_MOTION);
+    if (motionValue != lastMotionValue) {
+      lastMotionValue = motionValue;
+      String message  = "0;1;" + String(motionValue);
+      Serial.println(message);
+      mqtt.publish("sensors", message);
     }
 
     if ((millis() - lastPing) > PING_DELAY) {
